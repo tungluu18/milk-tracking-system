@@ -1,0 +1,5 @@
+{
+  "database":{
+    "mongodb-url":"mongodb://user:1aaaaaa1@ds042908.mlab.com:42908/milk-tracking-system"
+  }
+}
