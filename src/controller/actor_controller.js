@@ -25,6 +25,16 @@ exports.get = async function (req, res) {
   }
 }
 
+exports.getAll = async function (req, res) {
+  try {
+    const listActors = await ActorModel.find()
+    sendResponse(res, 200, listActors)
+  } catch (error) {
+    console.log(error)
+    sendResponse(res, 404, error.message)
+  }
+}
+
 exports.register = async function (req, res) {
   console.log('register...')
   try {
