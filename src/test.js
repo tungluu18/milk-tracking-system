@@ -1,4 +1,4 @@
-const config = (require('./config')).main
+const config = (require('./web3module/config')).main
 
 const Web3 = require('web3')
 const ethereumjs = require('ethereumjs-tx')
@@ -15,47 +15,11 @@ const ABIString = config.ABIString
 const ABI = JSON.parse(ABIString)
 const TrackingContract = new web3.eth.Contract(ABI, config.ContractAddress)
 
-module.exports = {  
-  executeMethod: async function (method, privkey) {
-    try {
-      const estimatedGas = await method.estimateGas()      
-      console.log('Estimated Gas: ', estimatedGas)
-      let tx = {
-        to: config.ContractAddress,
-        gasLimit: estimatedGas * 4,
-        gasPrice: 1000000000,
-        data: method.encodeABI()
-      }
-      const signedTx = await web3.eth.accounts.signTransaction(tx, privkey)
-
-      return new Promise((resolve, reject) => {
-        web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-        .on('receipt', result => {        
-          resolve(result)
-        })
-        .on('error', result => {        
-          reject(result)
-        })
-      })    
-    } catch (error) {
-      return Promise.reject(error)
-    }        
-  },
-
-  callMethod: async function(method, address) {
-    console.log('Called method: ', method)
-    console.log('Caller address: ', address)
-    if (!address) {
-      console.log('a')  
-      method.call()
-      .then(result => Promise.resolve(result))
-      .catch(error => Promise.reject(error))
-    } else {
-      method.call({from: address})
-      .then(result => Promise.resolve(result))
-      .catch(error => Promise.reject(error))
-    }
-  },
-
-  SmartContract: TrackingContract
-}
+TrackingContract.methods.getRecord('5c0aa8c06477421c543b8f11')
+  .call()
+  .then(result => {
+    console.log(result)
+  }) 
+  .catch(error => {
+    console.log(error)
+  })

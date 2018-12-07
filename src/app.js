@@ -7,7 +7,7 @@ const fs = require('fs')
 const readConfigFile = fs.readFileSync('src/config.json')
 const config = JSON.parse(readConfigFile)
 
-// mondogdb connection
+// mongodb connection
 const mongoose = require('mongoose')
 const mongodb_url = config.database['mongodb-url']
 mongoose.connect(process.env.MONGODB_URI || mongodb_url)
