@@ -15,10 +15,11 @@ const ABIString = config.ABIString
 const ABI = JSON.parse(ABIString)
 const TrackingContract = new web3.eth.Contract(ABI, config.ContractAddress)
 
-module.exports = {  
+module.exports = {
   executeMethod: async function (method, privkey) {
     try {
-      const estimatedGas = await method.estimateGas()      
+      const account = web3.eth.accounts.privateKeyToAccount(privkey)
+      const estimatedGas = await method.estimateGas({from: account.address})
       console.log('Estimated Gas: ', estimatedGas)
       let tx = {
         to: config.ContractAddress,
@@ -30,23 +31,23 @@ module.exports = {
 
       return new Promise((resolve, reject) => {
         web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-        .on('receipt', result => {        
+        .on('receipt', result => {
           resolve(result)
         })
-        .on('error', result => {        
+        .on('error', result => {
           reject(result)
         })
-      })    
+      })
     } catch (error) {
       return Promise.reject(error)
-    }        
+    }
   },
 
   callMethod: async function(method, address) {
     console.log('Called method: ', method)
     console.log('Caller address: ', address)
     if (!address) {
-      console.log('a')  
+      console.log('a')
       method.call()
       .then(result => Promise.resolve(result))
       .catch(error => Promise.reject(error))

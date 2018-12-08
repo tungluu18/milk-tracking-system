@@ -15,11 +15,47 @@ const ABIString = config.ABIString
 const ABI = JSON.parse(ABIString)
 const TrackingContract = new web3.eth.Contract(ABI, config.ContractAddress)
 
-TrackingContract.methods.getRecord('5c0aa8c06477421c543b8f11')
-  .call()
-  .then(result => {
-    console.log(result)
-  }) 
-  .catch(error => {
-    console.log(error)
-  })
+// TrackingContract.methods.call('5c0aa8c06477421c543b8f11')
+//   .call()
+//   .then(result => {
+//     console.log(result)
+//   })
+//   .catch(error => {
+//     console.log(error)
+//   })
+
+const executeMethod = async function () {
+  const privkey = '0x2da54f8ae6f84209a348d88665172d2f9896c7ed46e179c4cf61f05228897127'
+  const method = TrackingContract.methods.writeLayMau(
+    '5c0aa7986936d61b79de529f',
+    3, 4, 5, 2, 1)
+  try {
+    // const estimatedGas = 100000
+    const account = web3.eth.accounts.privateKeyToAccount(privkey)
+    const estimatedGas = await method.estimateGas({from: account.address})
+    console.log('Estimated Gas: ', estimatedGas)
+    let tx = {
+      to: config.ContractAddress,
+      gasLimit: estimatedGas * 4,
+      gasPrice: 1000000000,
+      data: TrackingContract.methods.writeLayMau(
+        '5c0aa7986936d61b79de529f',
+        3, 4, 5, 2, 1).encodeABI()
+    }
+    const signedTx = await web3.eth.accounts.signTransaction(tx, privkey)
+
+    return new Promise((resolve, reject) => {
+      web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+      .on('receipt', result => {
+        resolve(result)
+      })
+      .on('error', result => {
+        reject(result)
+      })
+    })
+  } catch (error) {
+    return Promise.reject(error)
+  }
+}
+
+executeMethod()
