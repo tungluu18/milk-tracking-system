@@ -50,29 +50,54 @@ exports.getAll = async function (req, res) {
 }
 
 exports.register = async function (req, res) {
-  console.log('register...')
+  console.log(`LOG[${Date(Date.now()).toString()}] register...`)
   try {
     const {username, password, name, role, address, privkey} = req.body
+    const actor = await ActorModel.findOne({$or: [
+      {'username': username}, {'name': name}, {'address': address}, {'privkey': privkey}
+    ]})
+
+    if (actor) {
+      sendResponse(res, 403, 'username, name, privekey or address has been used')
+      return
+    }
+    console.log("name: ", name, " role: ", role)
     newActor = new ActorModel({
       username: username,
       password: password,
       name: name,
       role: role,
-      address: address, 
+      address: address,
       privkey: privkey
     })
-    const existedActor = await ActorModel.find({username})
-    if (existedActor.length > 0) {
-      sendResponse(res, 404, {Error: 'Existed username'})
-      return
-    }
-    console.log("name: ", name, " role: ", role)
-    const executingMethod = TrackingContract.methods.regActor(name, role)    
-    const registerdOnBL = await SM.executeMethod(executingMethod, privkey)    
-    const createdNewActor = await newActor.save()    
+    const executingMethod = TrackingContract.methods.regActor(name, role)
+    const registerdOnBL = await SM.executeMethod(executingMethod, privkey)
+    const createdNewActor = await newActor.save()
 
     sendResponse(res, 200, createdNewActor)
   } catch (error) {
     sendResponse(res, 404, error.message)
+  }
+}
+
+exports.signRecord = async function (req, res) {
+  const {actorId, recordId} = req.params
+  if (!actorId || !recordId) {
+    sendResponse(res, 403, 'Bad request')
+    return
+  }
+  console.log(`LOG[${Date(Date.now()).toString()}] Actor ${actorId} signing on record ${recordId}...`)
+  try {
+    const actor = await ActorModel.findById(actorId)
+    if (!actor || actor.role != 'admin') {
+      sendResponse(res, 403, 'Only admin can sign for records')
+      return
+    }
+    const method = TrackingContract.methods.signRecord(String(recordId))
+    const recreipt = await SM.executeMethod(method, actor.privkey)
+    sendResponse(res, 200, 'Completed')
+  } catch (error) {
+    console.log(error)
+    sendResponse(res, 404, error)
   }
 }

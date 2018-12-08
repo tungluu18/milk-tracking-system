@@ -38,14 +38,14 @@ exports.create = async function (req, res) {
     sendResponse(res, 403, 'Bad request')
     return
   }
-
+  const {note, title} = req.body
   try {
     const {address, privkey} = await ActorModel.findById(actorId)
     if (!address || !privkey) {
       sendResponse(res, 403, 'Bad request')
       return
     }
-    const newRecord = new RecordModel({})
+    const newRecord = new RecordModel({note, title})
     const result = await newRecord.save()
 
     const recordId = String(result._id)
