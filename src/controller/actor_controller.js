@@ -27,10 +27,11 @@ exports.get = async function (req, res) {
 }
 
 exports.auth = async function (req, res) {
+  const {username, password} = req.query
+  console.log(`LOG[${Date(Date.now()).toString()}] Authenticate user [${username}, ${password}]...`)
   try {
-    const {username, password} = req.query
-    const actor = await ActorModel.find({username, password})
-    if (!actor.length) 
+    const actor = await ActorModel.findOne({username, password})
+    if (!actor)
       sendResponse(res, 404, {Error: 'Invalid username or password'})
     else sendResponse(res, 200, actor)
   } catch (error) {
