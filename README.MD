@@ -1,9 +1,11 @@
 # Milk tracking system
 ### Pre-install requiresite
-    node 
+    node
     npm
+    yarn
 ### Installation
-    npm install
+    yarn install
 ### Running
-    npm start
+    yarn start
+
 Application will be running on port 12345
