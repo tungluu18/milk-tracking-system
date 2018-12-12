@@ -24,9 +24,13 @@ exports.database = mongoose.model('record', RecordSchema)
 exports.getById = async function (recordId) {
   if (!recordId) return null
 
-  const record_DB = await exports.database.findById(recordId)
-  if (!record_DB) return null
-  const record_BL  = await TrackingContract.methods.getRecord(String(recordId)).call()
+  // const record_DB = await exports.database.findById(recordId)
+  // if (!record_DB) return null
+  // const record_BL  = await TrackingContract.methods.getRecord(String(recordId)).call()
+  const [record_DB, record_BL] = await Promise.all([
+    exports.database.findById(recordId),
+    TrackingContract.methods.getRecord(String(recordId)).call()
+  ])
 
   let result = {}
   result.ThongSoLayMau = (record_BL.ThongSoLayMau == 2) ? await LayMau.getById(recordId) : null

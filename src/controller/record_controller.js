@@ -19,17 +19,30 @@ const sendResponse = function (res, status, payload) {
   })
 }
 
-exports.getAll = async function (req, res) {
+exports.getAll = async function(req, res) {
   try {
     const listRecords = await RecordModel.find()
-    let result = []
-    for (var a of listRecords) result.push(await RecordFunc.getById(a._id))
+    const promises = []
+    for (var a of listRecords) promises.push(RecordFunc.getById(a._id))
+    const result = await Promise.all(promises)
     sendResponse(res, 200, result)
   } catch (error) {
     console.log(error)
     sendResponse(res, 404, error.message)
   }
 }
+
+// exports.getAll = async function (req, res) {
+//   try {
+//     const listRecords = await RecordModel.find()
+//     let result = []
+//     for (var a of listRecords) result.push(await RecordFunc.getById(a._id))
+//     sendResponse(res, 200, result)
+//   } catch (error) {
+//     console.log(error)
+//     sendResponse(res, 404, error.message)
+//   }
+// }
 
 exports.create = async function (req, res) {
   console.log(`LOG[${Date.now()}] Creating record...`)
